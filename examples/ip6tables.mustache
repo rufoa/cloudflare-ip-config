@@ -1,0 +1,7 @@
+*filter
+:INPUT DROP
+-A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+{{#ranges6}}
+-A INPUT -s {{cidr}} -p tcp -m tcp --dport 443 -j ACCEPT
+{{/ranges6}}
+COMMIT

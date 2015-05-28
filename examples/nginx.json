@@ -1,0 +1,2 @@
+{"template": "nginx.mustache",
+"destination": "/etc/nginx/conf.d/cloudflare.conf"}

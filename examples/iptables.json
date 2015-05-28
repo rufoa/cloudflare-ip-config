@@ -1,0 +1,7 @@
+[
+{"template": "ip4tables.mustache",
+"destination": "/etc/iptables/rules.v4"},
+{"template": "ip6tables.mustache",
+"destination": "/etc/iptables/rules.v6",
+"after": ["service", "netfilter-persistent", "reload"]}
+]
