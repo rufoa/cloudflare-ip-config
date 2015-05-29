@@ -28,13 +28,14 @@ etc
 ## Template file format
 
 - [mustache](https://mustache.github.io/)
-- Use `{{#ranges4}} ... {{/ranges4}}` to loop over the IP ranges
+- Use `{{#ranges4}} ... {{/ranges4}}` to loop over the IPv4 ranges
 - Inside, you can use these tags:
  - `{{cidr}}`, e.g. `1.2.3.4/24`
  - `{{ip}}`, e.g. `1.2.3.4`
  - `{{prefix}}` e.g. `24`
  - `{{mask}}` e.g. `255.255.255.0`
-
-## TODO
-
-- IPv6 support
+- Use `{{#ranges6}} ... {{/ranges6}}` to loop over the IPv6 ranges
+- Inside, you can use these tags:
+ - `{{cidr}}`, e.g. `1234:5678::/32`
+ - `{{ip}}`, e.g. `1234:5678::`
+ - `{{prefix}}` e.g. `32`

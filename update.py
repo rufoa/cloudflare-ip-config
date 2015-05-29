@@ -4,6 +4,15 @@ def fatal(message):
 	print message
 	exit(1)
 
+def fetch(url):
+	try:
+		response = requests.get(url, verify=True)
+	except requests.exceptions.SSLError:
+		fatal('Bad SSL cert while fetching ' + url)
+	if response.status_code != 200:
+		fatal('Bad status code ' + response.status_code + ' while fetching ' + url)
+	return response.text
+
 files = sys.argv[1:]
 if len(files) >= 1:
 	config = []
@@ -28,17 +37,11 @@ if len(files) >= 1:
 else:
 	fatal('No config file(s) specified')
 
-
-url = 'https://www.cloudflare.com/ips-v4'
-try:
-	response = requests.get(url, verify=True)
-except requests.exceptions.SSLError:
-	fatal('Bad SSL cert while fetching ' + url)
-if response.status_code != 200:
-	fatal('Bad status code ' + response.status_code + ' while fetching ' + url)
+v4 = fetch('https://www.cloudflare.com/ips-v4')
+v6 = fetch('https://www.cloudflare.com/ips-v6')
 
 ranges4 = []
-for (ip, prefix) in re.findall('(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/(\d{1,2})', response.text):
+for (ip, prefix) in re.findall('(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/(\d{1,2})', v4):
 	cidr = ip + '/' + prefix
 	maskhex = format((2 ** int(prefix) - 1) << (32 - int(prefix)), '08x')
 	mask = u'.'.join([str(int(maskhex[n:n+2], 16)) for n in [0,2,4,6]])
@@ -49,10 +52,19 @@ for (ip, prefix) in re.findall('(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/(\d{1,2})',
 		'mask': mask
 	})
 
+ranges6 = []
+for (ip, prefix) in re.findall('((?:[0-9a-fA-F]{1,4}:{0,2}){1,6})/(\d{1,2})', v6):
+	cidr = ip + '/' + prefix
+	ranges6.append({
+		'ip': ip,
+		'prefix': prefix,
+		'cidr': cidr,
+	})
+
 for entry in config:
 	with open(entry['template']) as handle:
 		template = handle.read()
-	rendered = pystache.render(template, {'ranges4': ranges4})
+	rendered = pystache.render(template, {'ranges4': ranges4, 'ranges6': ranges6})
 	if 'before' in entry:
 		subprocess.check_call(entry['before'])
 	with open(entry['destination'], 'w') as handle:
